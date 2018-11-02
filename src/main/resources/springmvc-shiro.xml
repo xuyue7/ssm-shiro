@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:lang="http://www.springframework.org/schema/lang"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	         http://www.springframework.org/schema/beans/spring-beans.xsd
+	         http://www.springframework.org/schema/lang
+	         http://www.springframework.org/schema/lang/spring-lang.xsd      
+	         http://www.springframework.org/schema/tx   
+	         http://www.springframework.org/schema/tx/spring-tx.xsd    
+	         http://www.springframework.org/schema/aop     
+	         http://www.springframework.org/schema/aop/spring-aop.xsd    
+	         http://www.springframework.org/schema/mvc     
+	         http://www.springframework.org/schema/mvc/spring-mvc.xsd   
+	         http://www.springframework.org/schema/context     
+	         http://www.springframework.org/schema/context/spring-context.xsd
+	         http://www.springframework.org/schema/cache
+	         http://www.springframework.org/schema/cache/spring-cache.xsd
+	         http://www.springframework.org/schema/task 
+	         http://www.springframework.org/schema/task/spring-task.xsd"
+	default-lazy-init="true">
+	<!-- 扫描的包 -->
+	<context:component-scan base-package="com.ssm01.ssm.*" />
+
+	<!-- 自定义relam -->
+	<bean id="userRealm" class="com.ssm01.relam.UserRealm">
+	</bean>
+
+	<!-- 配置緩存管理器 -->
+	<bean id="cacheManager"
+		class="org.apache.shiro.cache.MemoryConstrainedCacheManager"></bean>
+
+	<!-- 配置 Bean 后置处理器: 会自动的调用和 Spring 整合后各个组件的生命周期方法. -->
+	<bean id="lifecycleBeanPostProcessor"
+		class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+
+
+	<bean id="securityManager"
+		class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="realm" ref="userRealm" />
+	</bean>
+	<!-- 过滤器 -->
+	<bean id="shiroFilter"
+		class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<!-- 装配 securityManager -->
+		<property name="securityManager" ref="securityManager" />
+		<!-- 配置登陆页面 -->
+		<property name="loginUrl" value="/loginCheck" />
+		<!-- 登陆成功后的一面 -->
+		<property name="successUrl" value="/main" />
+		<!-- 没有权限跳转的页面啊 -->
+		<property name="unauthorizedUrl" value="/index" />
+
+		<!-- 具体配置需要拦截哪些 URL, 以及访问对应的 URL 时使用 Shiro 的什么 Filter 进行拦截. -->
+		<property name="filterChainDefinitions">
+			<value>
+				<!-- 配置登出: 使用 logout 过滤器 /shiro-logout = logout /shiro-* = anon /user.jsp 
+					= roles[user] /admin.jsp = roles[admin] -->
+				/** = authc
+			</value>
+		</property>
+	</bean>
+
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings">
+            <props>
+                <prop key="org.apache.shiro.authz.UnauthorizedException">/shiroException</prop>
+            </props>
+        </property>
+    </bean>
+</beans>
+
+
+
+
+
+
+
+
+
+
